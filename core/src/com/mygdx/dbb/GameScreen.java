@@ -1,12 +1,13 @@
 package com.mygdx.dbb;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 
 class GameScreen implements Screen {
-
-}
+    private final Camera camera;
 GameScreen(){
-
+    camera = new OrthographicCamera();
 }
 
     @Override
@@ -43,3 +44,4 @@ GameScreen(){
     public void dispose() {
 
     }
+}
