@@ -1,14 +1,51 @@
 package com.mygdx.dbb;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 class GameScreen implements Screen {
     private final Camera camera;
-GameScreen(){
-    camera = new OrthographicCamera();
-}
+    private final SpriteBatch batch;
+    private Texture background;
+    private Texture background2;
+    private MainCharacter mainCharacter;
+
+    GameScreen(){
+        camera = new OrthographicCamera();
+        batch = new SpriteBatch();
+        background = new Texture("background.png");
+        background2 = new Texture("background2.png");
+        mainCharacter = new MainCharacter(new Texture("dino.png"), 200, 90);
+
+        // Add input processor to handle touch events
+        Gdx.input.setInputProcessor(new InputAdapter() {
+            @Override
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                if (screenX < Gdx.graphics.getWidth() / 2) {
+                    // Left side of the screen touched, move left
+                    mainCharacter.moveLeft();
+                } else {
+                    // Right side of the screen touched, move right
+                    mainCharacter.moveRight();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+                // Stop character movement when touch is released
+                mainCharacter.stopMoving();
+                return true;
+            }
+        });
+    }
+
 
     @Override
     public void show() {
@@ -17,8 +54,21 @@ GameScreen(){
 
     @Override
     public void render(float delta) {
+        // Update main character
+        mainCharacter.update(delta);
 
+        // Clear screen
+        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Draw backgrounds and main character
+        batch.begin();
+        batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.draw(background2, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.draw(mainCharacter.getSprite(), mainCharacter.getPosition().x, mainCharacter.getPosition().y);
+        batch.end();
     }
+
 
     @Override
     public void resize(int width, int height) {
@@ -42,6 +92,8 @@ GameScreen(){
 
     @Override
     public void dispose() {
-
+        batch.dispose();
+        background.dispose();
+        background2.dispose();
     }
 }

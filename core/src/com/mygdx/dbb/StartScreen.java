@@ -12,20 +12,20 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
-
-
 public class StartScreen implements Screen {
     private SpriteBatch batch;
-    private Texture startBackground;
     private Texture startButton;
     private Rectangle startButtonBounds;
     private OrthographicCamera camera;
     private BitmapFont titleFont;
 
-
     public StartScreen() {
         batch = new SpriteBatch();
-        startBackground = new Texture("badlogic.jpg");
+        // Remove startBackground texture
+
+        // Set the background color to black
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+
         startButton = new Texture("start_button.png");
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -39,12 +39,11 @@ public class StartScreen implements Screen {
     }
 
     @Override
-    public void show() {
-    }
+    public void show() {}
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        // Clear the screen with the specified color
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
@@ -52,54 +51,45 @@ public class StartScreen implements Screen {
 
         batch.begin();
 
-        batch.draw(startBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        // Draw the start button
         batch.draw(startButton, startButtonBounds.x, startButtonBounds.y);
+
+        // Draw the game title
         GlyphLayout layout = new GlyphLayout();
         String title = "Dino Bubble Blast";
         layout.setText(titleFont, title);
         float textWidth = layout.width;
-
-
         titleFont.draw(batch, layout, (Gdx.graphics.getWidth() - textWidth) / 2, Gdx.graphics.getHeight() - 50);
+
         batch.end();
 
-
+        // Check if the start button is touched
         if (Gdx.input.justTouched()) {
             Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             if (startButtonBounds.contains(touchPos.x, touchPos.y)) {
-//                ((Game) Gdx.app.getApplicationListener()).setScreen(new GameScreen());
-                //logic to switch to game screen after button is clicked
-                System.out.print("Switch to Game Screen");
+                // Switch to the game screen when the button is clicked
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new GameScreen());
             }
         }
     }
 
     @Override
-    public void resize(int width, int height) {
-
-    }
+    public void resize(int width, int height) {}
 
     @Override
-    public void pause() {
-
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-
-    }
+    public void resume() {}
 
     @Override
-    public void hide() {
-
-    }
-
+    public void hide() {}
 
     @Override
     public void dispose() {
         batch.dispose();
-        startBackground.dispose();
         startButton.dispose();
+        titleFont.dispose();
     }
 }
