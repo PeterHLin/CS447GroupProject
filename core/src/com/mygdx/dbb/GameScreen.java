@@ -16,6 +16,9 @@ class GameScreen implements Screen {
     private Texture background2;
     private MainCharacter mainCharacter;
 
+    private long lastTapTime = 0; // For tracking time between taps
+    private final long doubleTapThreshold = 400; // Milliseconds within which a second tap counts as a double tap
+
     GameScreen(){
         camera = new OrthographicCamera();
         batch = new SpriteBatch();
@@ -23,13 +26,22 @@ class GameScreen implements Screen {
         background2 = new Texture("background2.png");
         mainCharacter = new MainCharacter(new Texture("dino.png"), 200, 90);
 
+
         // Add input processor to handle touch events
         Gdx.input.setInputProcessor(new InputAdapter() {
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                long currentTime = System.currentTimeMillis();
                 if (screenX < Gdx.graphics.getWidth() / 2) {
                     // Left side of the screen touched, move left
-                    mainCharacter.moveLeft();
+                    if ( currentTime - lastTapTime < doubleTapThreshold ) {
+                        // Double tap detected
+                        mainCharacter.jump();
+                    } else {
+                        // Single tap detected
+                        mainCharacter.moveLeft();
+                    }
+                    lastTapTime = currentTime;
                 } else {
                     // Right side of the screen touched, move right
                     mainCharacter.moveRight();
