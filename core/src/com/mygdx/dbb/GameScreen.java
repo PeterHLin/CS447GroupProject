@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 
 class GameScreen implements Screen {
     private final Camera camera;
@@ -15,6 +16,9 @@ class GameScreen implements Screen {
     private Texture background;
     private Texture background2;
     private MainCharacter mainCharacter;
+    private Monster[] monsters;
+    private Texture monsterTexture1;
+    private Texture monsterTexture2;
 
     private long lastTapTime = 0; // For tracking time between taps
     private final long doubleTapThreshold = 400; // Milliseconds within which a second tap counts as a double tap
@@ -26,6 +30,16 @@ class GameScreen implements Screen {
         background2 = new Texture("background2.png");
         mainCharacter = new MainCharacter(new Texture("dino.png"), 200, 90);
 
+        monsters = new Monster[4];
+        monsterTexture1 = new Texture("monster1.png");
+        monsterTexture2 = new Texture("monster2.png");
+
+        // Spawn monsters at random positions
+        for (int i = 0; i < monsters.length; i++) {
+            float randomX = MathUtils.random(178, 1949);
+            float randomY = getRandomYPosition();
+            monsters[i] = new Monster(monsterTexture1, monsterTexture2, randomX, randomY);
+        }
 
         // Add input processor to handle touch events
         Gdx.input.setInputProcessor(new InputAdapter() {
@@ -58,6 +72,16 @@ class GameScreen implements Screen {
         });
     }
 
+    private float getRandomYPosition() {
+        // Define the possible Y positions
+        int[] possibleYPositions = {100,280, 470, 650};
+
+        // Select a random index from the array
+        int randomIndex = MathUtils.random(0, possibleYPositions.length - 1);
+
+        // Return the corresponding Y position
+        return possibleYPositions[randomIndex];
+    }
 
     @Override
     public void show() {
@@ -69,14 +93,22 @@ class GameScreen implements Screen {
         // Update main character
         mainCharacter.update(delta);
 
+        // Update monsters
+        for (Monster monster : monsters) {
+            monster.update(delta);
+        }
+
         // Clear screen
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Draw backgrounds and main character
+        // Draw backgrounds, monsters, and main character
         batch.begin();
         batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.draw(background2, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        for (Monster monster : monsters) {
+            batch.draw(monster.getSprite(), monster.getPosition().x, monster.getPosition().y);
+        }
         batch.draw(mainCharacter.getSprite(), mainCharacter.getPosition().x, mainCharacter.getPosition().y);
         batch.end();
     }
