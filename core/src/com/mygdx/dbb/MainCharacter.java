@@ -15,6 +15,15 @@ public class MainCharacter {
     private boolean movingLeft = false;
     private boolean movingRight = false;
 
+    private Vector2 velocity = new Vector2(0, 0);
+
+    private float gravity = -15;
+
+    private boolean isJumping = false;
+    private boolean canDoubleJump = false;
+
+    private float jumpSpeed = 500;
+
     public MainCharacter(Texture texture, float x, float y) {
         sprite = new Sprite(texture);
         position = new Vector2(x, y);
@@ -30,6 +39,15 @@ public class MainCharacter {
             position.x += speed * delta;
         }
 
+        if (position.y > 0 || velocity.y > 0) { // Simple check to simulate landing
+            velocity.y += gravity;
+            position.y += velocity.y * delta;
+            if (position.y < 0) {
+                position.y = 0; // Simulate landing
+                isJumping = false;
+                canDoubleJump = true; // Reset double jump upon landing
+            }
+        }
         // Update sprite position
         sprite.setPosition(position.x, position.y);
     }
@@ -49,6 +67,17 @@ public class MainCharacter {
     public void stopMoving() {
         movingLeft = false;
         movingRight = false;
+    }
+
+    void jump(){
+        if (!isJumping) {
+            velocity.y = jumpSpeed;
+            isJumping = true;
+        } else if (canDoubleJump) {
+            velocity.y = jumpSpeed;
+            canDoubleJump = false;
+        }
+
     }
 
     public Sprite getSprite() {
