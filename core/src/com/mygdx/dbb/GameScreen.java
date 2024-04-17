@@ -9,6 +9,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class GameScreen implements Screen {
     private final Camera camera;
@@ -19,6 +23,9 @@ class GameScreen implements Screen {
     private Monster[] monsters;
     private Texture monsterTexture1;
     private Texture monsterTexture2;
+
+    private List<Bubble> bubbles;
+    private long lastClickTime;
 
     private long lastTapTime = 0; // For tracking time between taps
     private final long doubleTapThreshold = 400; // Milliseconds within which a second tap counts as a double tap
@@ -41,6 +48,8 @@ class GameScreen implements Screen {
             monsters[i] = new Monster(monsterTexture1, monsterTexture2, randomX, randomY);
         }
 
+        bubbles = new ArrayList<>();
+
         // Add input processor to handle touch events
         Gdx.input.setInputProcessor(new InputAdapter() {
             @Override
@@ -55,11 +64,16 @@ class GameScreen implements Screen {
                         // Single tap detected
                         mainCharacter.moveLeft();
                     }
-                    lastTapTime = currentTime;
+                   // lastTapTime = currentTime;
                 } else {
                     // Right side of the screen touched, move right
                     mainCharacter.moveRight();
                 }
+                if (currentTime - lastTapTime < 300) {
+                    Vector2 clickPosition = new Vector2(screenX, Gdx.graphics.getHeight() - screenY);
+                    shootBubble(clickPosition);
+                }
+                lastTapTime = currentTime;
                 return true;
             }
 
@@ -110,10 +124,28 @@ class GameScreen implements Screen {
             batch.draw(monster.getSprite(), monster.getPosition().x, monster.getPosition().y);
         }
         batch.draw(mainCharacter.getSprite(), mainCharacter.getPosition().x, mainCharacter.getPosition().y);
+        for (int i = bubbles.size() - 1; i >= 0; i--) {
+            Bubble bubble = bubbles.get(i);
+            bubble.update(delta);
+            bubble.render(batch);
+            // Check if the bubble is beyond the screen bounds
+            if (bubble.getPosition().y > Gdx.graphics.getHeight() || bubble.getPosition().x < 0 || bubble.getPosition().x > Gdx.graphics.getWidth()) {
+                bubble.setActive(false); // Set the bubble inactive
+            }
+            if (!bubble.isActive()) {
+                bubbles.remove(i);
+            }
+        }
         batch.end();
     }
 
-
+    private void shootBubble(Vector2 targetPosition) {
+        Vector2 startPosition = mainCharacter.getPosition().cpy();
+        Vector2 direction = targetPosition.cpy().sub(startPosition).nor();
+        float speedMultiplier = 2.0f; // Adjust the speed multiplier as needed
+        Bubble bubble = new Bubble(new Texture("bubble.png"), startPosition, direction.scl(200 * speedMultiplier));
+        bubbles.add(bubble);
+    }
     @Override
     public void resize(int width, int height) {
 
